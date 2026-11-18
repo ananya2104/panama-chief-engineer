@@ -5,63 +5,63 @@
 <title>Chief Engineer, 1905: a Panama Canal decision game</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
-  :root { --navy:#14213D; --brass:#C9A227; --brassText:#8C6D0F; --slate:#4A6FA5; --sand:#F3EEDC; --mist:#EEF2F8; --ink:#1B2230; --grey:#6A7180; --red:#B5452E; --line:#D3DAE5; }
+  :root { --navy:#16191D; --brass:#C4552D; --brassText:#A3431F; --slate:#4F5D6B; --sand:#F6E9E2; --mist:#F4F2EE; --ink:#16191D; --grey:#6B7078; --red:#9E2B25; --line:#DAD6CE; }
   * { box-sizing:border-box; }
   body { margin:0; font-family: Calibri, Carlito, "Segoe UI", Arial, sans-serif; color:var(--ink); background:#fff; }
   .frame { width:1280px; height:720px; margin:0 auto; position:relative; overflow:hidden; background:#fff; }
   header { height:84px; background:var(--navy); color:#fff; display:flex; align-items:center; padding:0 40px; gap:24px; }
-  header h1 { font-family: Cambria, Caladea, Georgia, serif; font-size:28px; margin:0; font-weight:700; flex:1; }
-  .year { font-family: Cambria, Caladea, Georgia, serif; font-size:30px; color:var(--brass); font-weight:700; }
+  header h1 { font-family: Cambria, Caladea, Georgia, serif; font-size:26px; margin:0; font-weight:400; flex:1; letter-spacing:.2px; }
+  .year { font-family: Cambria, Caladea, Georgia, serif; font-size:26px; color:var(--brass); font-weight:400; }
   .dots { display:flex; gap:10px; }
-  .dot { width:34px; height:34px; border-radius:50%; border:2px solid #6E7FA3; color:#C9D3E6; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:15px; }
-  .dot.done { background:var(--slate); border-color:var(--slate); color:#fff; }
-  .dot.now { background:var(--brass); border-color:var(--brass); color:var(--navy); }
+  .dot { width:34px; height:34px; border-radius:50%; border:1px solid #4A4F55; color:#8E8A84; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:15px; }
+  .dot.done { background:#4A4F55; border-color:#4A4F55; color:#fff; }
+  .dot.now { background:var(--brass); border-color:var(--brass); color:#fff; }
   main { display:flex; gap:28px; padding:28px 40px 0; height:calc(720px - 84px - 96px); }
   .left { flex:1.55; display:flex; flex-direction:column; gap:14px; }
   .right { flex:1; display:flex; flex-direction:column; gap:12px; }
-  .lens { display:inline-block; background:var(--slate); color:#fff; border-radius:16px; padding:4px 14px; font-size:15px; font-weight:700; align-self:flex-start; }
-  .q { font-family: Cambria, Caladea, Georgia, serif; font-size:27px; font-weight:700; color:var(--navy); line-height:1.25; margin:0; }
+  .lens { display:inline-flex; align-items:center; gap:10px; color:var(--brass); padding:0; font-size:13px; font-weight:700; letter-spacing:2px; text-transform:uppercase; align-self:flex-start; } .lens::before { content:""; width:26px; height:3px; background:var(--brass); }
+  .q { font-family: Cambria, Caladea, Georgia, serif; font-size:29px; font-weight:400; color:var(--navy); line-height:1.25; margin:0; }
   .ctx { font-size:17px; line-height:1.45; margin:0; }
-  .opt { border:2px solid var(--line); border-radius:12px; padding:13px 16px; font-size:17px; line-height:1.35; cursor:pointer; background:#fff; display:flex; gap:12px; align-items:flex-start; transition:all .2s; }
+  .opt { border:1px solid var(--line); border-radius:0; padding:13px 16px; font-size:17px; line-height:1.35; cursor:pointer; background:#fff; display:flex; gap:12px; align-items:flex-start; transition:all .2s; }
   .opt b { color:var(--navy); }
   .opt .key { flex:0 0 30px; height:30px; border-radius:50%; background:var(--mist); color:var(--navy); font-weight:700; display:flex; align-items:center; justify-content:center; }
   .opt:hover { border-color:var(--slate); }
-  .opt.picked { border-color:var(--brass); background:var(--sand); box-shadow:0 0 0 3px rgba(201,162,39,.35); }
-  .opt.picked .key { background:var(--brass); }
+  .opt.picked { border-color:var(--brass); background:var(--sand); box-shadow: inset 4px 0 0 var(--brass); }
+  .opt.picked .key { background:var(--brass); color:#fff; }
   .opt.faded { opacity:.45; }
-  .result { border-radius:12px; padding:14px 18px; font-size:17px; line-height:1.45; }
-  .result.good { background:var(--mist); }
+  .result { border-radius:0; padding:14px 18px; font-size:17px; line-height:1.45; }
+  .result.good { background:var(--mist); border-left:4px solid var(--slate); }
   .result h3 { margin:0 0 6px; font-size:19px; color:var(--navy); }
-  .whatif { background:#F5DDD7; border-radius:12px; padding:12px 18px; font-size:16px; line-height:1.4; }
+  .whatif { background:#F4E1DE; border-left:4px solid var(--red); border-radius:0; padding:12px 18px; font-size:16px; line-height:1.4; }
   .whatif b { color:var(--red); }
-  .board { background:var(--navy); color:#fff; border-radius:14px; padding:18px 22px; }
-  .board h2 { margin:0 0 10px; font-size:16px; letter-spacing:1px; color:#C9D3E6; font-weight:700; text-transform:uppercase; }
-  .metric { display:flex; justify-content:space-between; align-items:baseline; padding:10px 0; border-top:1px solid #2C3D63; }
+  .board { background:var(--navy); color:#fff; border-radius:0; padding:18px 22px; }
+  .board h2 { margin:0 0 10px; font-size:12px; letter-spacing:2.5px; color:var(--brass); font-weight:700; text-transform:uppercase; }
+  .metric { display:flex; justify-content:space-between; align-items:baseline; padding:10px 0; border-top:1px solid #2E3339; }
   .metric:first-of-type { border-top:none; }
-  .metric .lab { font-size:16px; color:#C9D3E6; }
-  .metric .val { font-family: Cambria, Caladea, Georgia, serif; font-size:30px; font-weight:700; }
-  .metric .delta { font-size:14px; color:var(--brass); text-align:right; }
+  .metric .lab { font-size:15px; color:#B3AFA8; }
+  .metric .val { font-family: Cambria, Caladea, Georgia, serif; font-size:30px; font-weight:400; }
+  .metric .delta { font-size:14px; color:#E08A66; text-align:right; }
   .note { font-size:13px; color:var(--grey); line-height:1.35; }
-  .card { background:var(--sand); border-radius:12px; padding:14px 18px; font-size:16px; line-height:1.4; }
+  .card { background:var(--sand); border-left:4px solid var(--brass); border-radius:0; padding:14px 18px; font-size:16px; line-height:1.4; }
   .card b { color:var(--navy); }
-  footer.cap { position:absolute; left:0; right:0; bottom:0; height:96px; background:#0E1830; color:#fff; display:flex; align-items:center; padding:0 40px; font-size:21px; line-height:1.35; }
+  footer.cap { position:absolute; left:0; right:0; bottom:0; height:96px; background:#0F1114; color:#EEECE8; display:flex; align-items:center; padding:0 40px; font-size:21px; line-height:1.35; }
   footer.cap.hide { display:none; }
   .controls { position:absolute; bottom:18px; right:40px; display:flex; gap:10px; }
-  .controls button { font: inherit; font-size:16px; padding:10px 18px; border-radius:10px; border:none; background:var(--brass); color:var(--navy); font-weight:700; cursor:pointer; }
-  .controls button.sec { background:var(--mist); }
+  .controls button { font: inherit; font-size:15px; padding:10px 20px; border-radius:0; border:none; background:var(--brass); color:#fff; letter-spacing:.5px; font-weight:700; cursor:pointer; }
+  .controls button.sec { background:#fff; color:var(--ink); border:1px solid var(--line); }
   .title { position:absolute; inset:0; background:var(--navy); color:#fff; display:flex; flex-direction:column; justify-content:center; padding:0 90px; }
-  .title h1 { font-family: Cambria, Caladea, Georgia, serif; font-size:56px; margin:0 0 14px; }
-  .title p { font-size:24px; color:#DDE5F0; margin:6px 0; line-height:1.4; }
-  .title .gold { color:var(--brass); font-weight:700; }
+  .title h1 { font-family: Cambria, Caladea, Georgia, serif; font-size:64px; font-weight:400; margin:0 0 18px; }
+  .title p { font-size:23px; color:#D9D6D0; margin:6px 0; line-height:1.4; }
+  .title .gold { color:var(--brass); font-weight:700; font-size:14px; letter-spacing:3px; text-transform:uppercase; }
   table.sum { width:100%; border-collapse:collapse; font-size:16px; }
-  table.sum th { background:var(--navy); color:#fff; text-align:left; padding:8px 10px; font-size:15px; }
+  table.sum th { background:none; color:var(--ink); text-align:left; padding:8px 10px; font-size:14px; border-bottom:2px solid var(--ink); }
   table.sum td { padding:8px 10px; border-bottom:1px solid var(--line); }
   table.sum td.bad { color:var(--red); font-weight:700; }
   table.sum td.ok { color:var(--slate); font-weight:700; }
 </style>
 <style>
   html, body { height:100%; }
-  body { background:#14213D; overflow:hidden; }
+  body { background:#16191D; overflow:hidden; }
   .frame { transform-origin: top left; margin:0 !important; position:absolute !important; }
 </style>
 <script>
@@ -193,8 +193,8 @@ function render(){
   }
   app.innerHTML = html + (cap ? `<footer class="cap">${cap}</footer>` : "");
   if(!video) app.querySelectorAll(".opt").forEach(el=>{ if(step%2===1 && step<=10) el.onclick=()=>choose(+el.dataset.k); });
-  if(!video && step===0){ app.querySelector(".title").insertAdjacentHTML("beforeend", `<div style="margin-top:30px"><button onclick="next()" style="font:inherit;font-size:20px;padding:12px 26px;border-radius:10px;border:none;background:#C9A227;color:#14213D;font-weight:700;cursor:pointer">Start</button></div>`); }
-  if(!video && step===12){ app.querySelector(".title").insertAdjacentHTML("beforeend", `<div style="margin-top:30px"><button onclick="restart()" style="font:inherit;font-size:20px;padding:12px 26px;border-radius:10px;border:none;background:#C9A227;color:#14213D;font-weight:700;cursor:pointer">Play again</button></div>`); }
+  if(!video && step===0){ app.querySelector(".title").insertAdjacentHTML("beforeend", `<div style="margin-top:30px"><button onclick="next()" style="font:inherit;font-size:20px;padding:12px 26px;border-radius:0;border:none;background:#C4552D;color:#fff;font-weight:700;letter-spacing:.5px;cursor:pointer">Start</button></div>`); }
+  if(!video && step===12){ app.querySelector(".title").insertAdjacentHTML("beforeend", `<div style="margin-top:30px"><button onclick="restart()" style="font:inherit;font-size:20px;padding:12px 26px;border-radius:0;border:none;background:#C4552D;color:#fff;font-weight:700;letter-spacing:.5px;cursor:pointer">Play again</button></div>`); }
   if(!video && step===11){ setTimeout(()=>{ const c=app.querySelector(".controls"); c.insertAdjacentHTML("afterbegin", `<button class="sec" onclick="next()">Facilitator note</button>`); },0); }
 }
 function choose(k){ const i=Math.floor((step-1)/2); picks[i]=k; step++; render(); }
