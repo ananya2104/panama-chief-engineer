@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Canal Control Room: earned value on the Culebra Cut</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root { --ink:#16191D; --acc:#C4552D; --accD:#A3431F; --slate:#4F5D6B; --paper:#F4F2EE; --sand:#F6E9E2; --grey:#6B7078; --red:#9E2B25; --amber:#C98A1E; --green:#3F7A55; --line:#DAD6CE; }
+  * { box-sizing:border-box; }
+  html, body { height:100%; margin:0; }
+  body { background:#16191D; overflow:hidden; font-family: Calibri, Carlito, "Segoe UI", Arial, sans-serif; color:var(--ink); }
+  .frame { width:1280px; height:720px; position:absolute; transform-origin: top left; background:#fff; overflow:hidden; }
+  header { height:78px; background:var(--ink); color:#fff; display:flex; align-items:center; padding:0 36px; gap:22px; }
+  header .k { font-size:12px; letter-spacing:2.5px; color:var(--acc); font-weight:700; text-transform:uppercase; }
+  header h1 { font-family: Cambria, Caladea, Georgia, serif; font-weight:400; font-size:25px; margin:2px 0 0; }
+  header .grow { flex:1; }
+  header .month { font-family: Cambria, Caladea, Georgia, serif; font-size:28px; color:var(--acc); }
+  .status { font-size:13px; font-weight:700; letter-spacing:2px; padding:7px 12px; text-transform:uppercase; }
+  .st-g { background:#E3EEE6; color:var(--green); } .st-a { background:#F6EAD2; color:#8A5D10; } .st-r { background:#F4E1DE; color:var(--red); }
+  main { display:flex; gap:24px; padding:20px 36px 0; }
+  .left { width:760px; }
+  .right { flex:1; display:flex; flex-direction:column; gap:12px; }
+  .chartbox { border:1px solid var(--line); padding:12px 14px 6px; }
+  .chartbox .t { font-size:12px; letter-spacing:2px; font-weight:700; color:var(--grey); text-transform:uppercase; display:flex; justify-content:space-between; }
+  .legend { display:flex; gap:18px; font-size:13px; color:var(--grey); letter-spacing:0; text-transform:none; font-weight:400; }
+  .legend i { display:inline-block; width:18px; height:3px; vertical-align:middle; margin-right:6px; }
+  svg text { font-family: Calibri, Carlito, Arial, sans-serif; }
+  .controls { display:flex; align-items:center; gap:14px; margin-top:12px; }
+  .controls input[type=range] { flex:1; accent-color: var(--acc); }
+  button { font:inherit; font-size:14px; font-weight:700; padding:9px 16px; border:1px solid var(--line); background:#fff; color:var(--ink); cursor:pointer; }
+  button.on { background:var(--ink); color:#fff; border-color:var(--ink); }
+  button.play { background:var(--acc); color:#fff; border-color:var(--acc); min-width:86px; }
+  .seg { display:flex; }
+  .seg button + button { border-left:none; }
+  .seglab { font-size:12px; letter-spacing:2px; font-weight:700; color:var(--grey); text-transform:uppercase; }
+  .tiles { display:grid; grid-template-columns: 1fr 1fr 1fr; gap:1px; background:var(--line); border:1px solid var(--line); }
+  .tile { background:#fff; padding:10px 12px; }
+  .tile .l { font-size:12px; color:var(--grey); letter-spacing:.5px; }
+  .tile .v { font-family: Cambria, Caladea, Georgia, serif; font-size:27px; margin-top:2px; }
+  .tile .s { font-size:12px; color:var(--grey); }
+  .tile.hl { background:var(--ink); color:#fff; } .tile.hl .l, .tile.hl .s { color:#B3AFA8; }
+  .read { background:var(--paper); border-left:4px solid var(--slate); padding:14px 16px; font-size:16px; line-height:1.45; min-height:150px; }
+  .read b { display:block; font-size:12px; letter-spacing:2px; text-transform:uppercase; color:var(--slate); margin-bottom:4px; }
+  .read.warn { background:#F4E1DE; border-left-color:var(--red); } .read.warn b { color:var(--red); }
+  .call { background:var(--sand); border-left:4px solid var(--acc); padding:14px 16px; font-size:15.5px; min-height:96px; line-height:1.4; }
+  .call b { color:var(--accD); }
+  footer { position:absolute; left:0; right:0; bottom:0; height:40px; background:#0F1114; color:#B3AFA8; font-size:12.5px; display:flex; align-items:center; padding:0 36px; }
+</style>
+<script>
+  function fitFrame() {
+    var f = document.querySelector('.frame'); if (!f) return;
+    var k = Math.min(window.innerWidth / 1280, window.innerHeight / 720);
+    f.style.transform = 'scale(' + k + ')';
+    f.style.left = ((window.innerWidth - 1280 * k) / 2) + 'px';
+    f.style.top = ((window.innerHeight - 720 * k) / 2) + 'px';
+  }
+  window.addEventListener('resize', fitFrame);
+  window.addEventListener('load', fitFrame);
+</script>
+</head>
+<body>
+<div class="frame">
+  <header>
+    <div><div class="k">Lens 8 prototype / project control</div><h1>Canal Control Room: the Culebra Cut work package</h1></div>
+    <div class="grow"></div>
+    <div class="status" id="status">On plan</div>
+    <div class="month" id="month">January 1908</div>
+  </header>
+  <main>
+    <div class="left">
+      <div class="chartbox">
+        <div class="t"><span>Cumulative value and cost, $ million</span>
+          <span class="legend"><span><i style="background:#9A968F"></i>Planned value</span><span><i style="background:#C4552D"></i>Earned value</span><span><i style="background:#16191D"></i>Actual cost</span></span></div>
+        <svg id="chart" width="730" height="452" viewBox="0 0 730 452"></svg>
+      </div>
+      <div class="controls">
+        <button class="play" id="play">Play</button>
+        <input type="range" id="slider" min="0" max="83" value="0">
+        <span class="seglab">Progress counted by</span>
+        <div class="seg"><button id="mEng" class="on">Engineer</button><button id="mFor">Foreman</button></div>
+      </div>
+    </div>
+    <div class="right">
+      <div class="tiles">
+        <div class="tile"><div class="l">Planned value</div><div class="v" id="pv">0</div><div class="s">$ million to date</div></div>
+        <div class="tile"><div class="l">Earned value</div><div class="v" id="ev">0</div><div class="s">$ million to date</div></div>
+        <div class="tile"><div class="l">Actual cost</div><div class="v" id="ac">0</div><div class="s">$ million to date</div></div>
+        <div class="tile hl"><div class="l">Schedule index</div><div class="v" id="spi">1.00</div><div class="s">earned / planned</div></div>
+        <div class="tile hl"><div class="l">Cost index</div><div class="v" id="cpi">1.00</div><div class="s">earned / actual</div></div>
+        <div class="tile hl"><div class="l">Forecast cost</div><div class="v" id="eac">100</div><div class="s">budget 100 / cost index</div></div>
+      </div>
+      <div class="read" id="read"><b>Chief engineer's reading</b><span id="readt"></span></div>
+      <div class="call"><b>Your call:</b> <span id="callt"></span></div>
+    </div>
+  </main>
+  <footer>Illustrative teaching data for one work package (budget $100 million, planned finish mid-1913). Slide dates and sizes are simplified; the method is the course's earned value method.</footer>
+</div>
+<script>
+const MONTHS=["January","February","March","April","May","June","July","August","September","October","November","December"];
+const N=84, BAC=100, PD=66;
+const SLIDES=[30,47,58];
+const S=x=>x<=0?0:x>=1?1:x*x*(3-2*x);
+const lagAt=i=>SLIDES.reduce((a,m,k)=>a+(i>=m?Math.min(i-m,6)*[0.45,0.7,0.6][k]:0),0);
+const rework=i=>SLIDES.reduce((a,m)=>a+(i>=m?Math.min(i-m,8)*0.75:0),0);
+const D=[...Array(N)].map((_,i)=>{
+  const pv=BAC*S(i/PD);
+  const evE=BAC*S((i-lagAt(i))/PD);
+  const rw=Math.min(rework(i), BAC-evE+rework(i));
+  const evF=Math.min(BAC, evE + rework(i)*0.9);
+  const ac=evE*1.03 + rework(i);
+  return {pv,evE,evF,ac};
+});
+let m=0, mode="eng", timer=null;
+const P=new URLSearchParams(location.search);
+if(P.has("m")) m=+P.get("m"); if(P.get("mode")==="f") mode="for";
+const X=i=>52+i*(660/(N-1)), Y=v=>410-v*(380/115);
+function path(key,upto){ return D.slice(0,upto+1).map((d,i)=>(i?"L":"M")+X(i).toFixed(1)+" "+Y(key==="ev"?(mode==="eng"?d.evE:d.evF):d[key]).toFixed(1)).join(" "); }
+function chart(){
+  let g="";
+  for(let v=0;v<=100;v+=25){ g+=`<line x1="52" x2="712" y1="${Y(v)}" y2="${Y(v)}" stroke="#ECEAE5"/><text x="44" y="${Y(v)+4}" font-size="11" fill="#8E8A84" text-anchor="end">${v}</text>`; }
+  for(let y=0;y<7;y++){ const x=X(y*12); g+=`<line x1="${x}" x2="${x}" y1="30" y2="410" stroke="#F2F0EB"/><text x="${x+4}" y="430" font-size="12" fill="#6B7078">${1908+y}</text>`; }
+  g+=`<line x1="52" x2="712" y1="${Y(BAC)}" y2="${Y(BAC)}" stroke="#16191D" stroke-dasharray="2 4"/><text x="712" y="${Y(BAC)-6}" font-size="11" fill="#6B7078" text-anchor="end">Budget at completion, 100</text>`;
+  SLIDES.forEach((s,k)=>{ if(m>=s){ g+=`<line x1="${X(s)}" x2="${X(s)}" y1="40" y2="410" stroke="#9E2B25" stroke-dasharray="3 3"/><text x="${X(s)+4}" y="${52+k*14}" font-size="11" fill="#9E2B25" font-weight="700">Slide ${k+1}</text>`; }});
+  g+=`<path d="${path("pv",N-1)}" fill="none" stroke="#9A968F" stroke-width="2" stroke-dasharray="6 4"/>`;
+  g+=`<path d="${path("ac",m)}" fill="none" stroke="#16191D" stroke-width="2.5"/>`;
+  g+=`<path d="${path("ev",m)}" fill="none" stroke="#C4552D" stroke-width="3"/>`;
+  const d=D[m], ev=mode==="eng"?d.evE:d.evF;
+  g+=`<line x1="${X(m)}" x2="${X(m)}" y1="30" y2="410" stroke="#16191D" stroke-width="1"/>`;
+  g+=`<circle cx="${X(m)}" cy="${Y(ev)}" r="5" fill="#C4552D"/><circle cx="${X(m)}" cy="${Y(d.ac)}" r="4.5" fill="#16191D"/><circle cx="${X(m)}" cy="${Y(d.pv)}" r="4" fill="#9A968F"/>`;
+  document.getElementById("chart").innerHTML=g;
+}
+function f1(v){ return v.toFixed(1); }
+function render(){
+  const d=D[m], ev=mode==="eng"?d.evE:d.evF, spi=d.pv>0.5?ev/d.pv:1, cpi=d.ac>0.5?ev/d.ac:1, eac=BAC/cpi;
+  const engSpi=d.pv>0.5?d.evE/d.pv:1;
+  document.getElementById("month").textContent=MONTHS[m%12]+" "+(1908+Math.floor(m/12));
+  document.getElementById("pv").textContent=f1(d.pv); document.getElementById("ev").textContent=f1(ev); document.getElementById("ac").textContent=f1(d.ac);
+  document.getElementById("spi").textContent=spi.toFixed(2); document.getElementById("cpi").textContent=cpi.toFixed(2); document.getElementById("eac").textContent=Math.round(eac);
+  const worst=Math.min(spi,cpi), st=document.getElementById("status");
+  st.className="status "+(worst>=0.95?"st-g":worst>=0.88?"st-a":"st-r"); st.textContent=worst>=0.95?"On plan":worst>=0.88?"Watch":"Off plan";
+  const slipM=Math.max(0,Math.round(PD/Math.max(engSpi,0.5)-PD));
+  let r="", c="", warn=false;
+  const hit=SLIDES.filter(s=>m>=s).length;
+  if(m<SLIDES[0]){ r="Value is being earned to plan. Spoil trains are the constraint, and they are keeping pace."; c="Nothing yet. What would you watch first: the schedule index or the cost index?"; }
+  else if(mode==="for" && engSpi<0.95){ warn=true; r=`The foreman counts every cubic yard dug, including spoil that slid back in. On his count the cut looks ${spi>=0.95?"on plan":"only slightly behind"}. On the engineer's count it is ${Math.round((1-engSpi)*100)} per cent behind, about ${slipM} months of slip.`; c="Switch to the engineer's count. Which number would you report to Washington, and why?"; }
+  else if(m<SLIDES[0]+6){ r=`Slide ${hit} has filled part of the cut. Re-digging costs money but earns no value: the cost index falls first, then the schedule index.`; c="Do you re-baseline the plan now, or hold it and show the variance?"; }
+  else { r=`${hit} slide${hit>1?"s":""} so far. Schedule index ${spi.toFixed(2)} and cost index ${cpi.toFixed(2)}. At this rate the work package costs about $${Math.round(eac)} million and finishes about ${slipM} months late.`; c=eac>110?"The forecast is past the budget by more than 10 per cent. Who has to approve the new estimate?":"Is the slip on the critical path, or does it have float?"; }
+  if(m>=N-8) { r=`The cut is finished. Final cost about $${f1(d.ac)} million against a $100 million budget: the slides, not the digging rate, set the overrun.`; c="Which risk response would have reduced this most: flatter slopes earlier, or a bigger contingency?"; warn=false; }
+  const rd=document.getElementById("read"); rd.className="read"+(warn?" warn":""); document.getElementById("readt").textContent=r; document.getElementById("callt").textContent=c;
+  document.getElementById("slider").value=m; document.getElementById("mEng").className=mode==="eng"?"on":""; document.getElementById("mFor").className=mode==="for"?"on":"";
+  chart();
+}
+document.getElementById("slider").oninput=e=>{ m=+e.target.value; render(); };
+document.getElementById("mEng").onclick=()=>{ mode="eng"; render(); };
+document.getElementById("mFor").onclick=()=>{ mode="for"; render(); };
+document.getElementById("play").onclick=()=>{
+  const b=document.getElementById("play");
+  if(timer){ clearInterval(timer); timer=null; b.textContent="Play"; return; }
+  if(m>=N-1) m=0; b.textContent="Pause";
+  timer=setInterval(()=>{ m++; render(); if(m>=N-1){ clearInterval(timer); timer=null; b.textContent="Play"; } },140);
+};
+render(); fitFrame();
+</script>
+</body>
+</html>
