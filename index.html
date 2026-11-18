@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Chief Engineer, 1905: a Panama Canal decision game</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root { --navy:#14213D; --brass:#C9A227; --brassText:#8C6D0F; --slate:#4A6FA5; --sand:#F3EEDC; --mist:#EEF2F8; --ink:#1B2230; --grey:#6A7180; --red:#B5452E; --line:#D3DAE5; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family: Calibri, Carlito, "Segoe UI", Arial, sans-serif; color:var(--ink); background:#fff; }
+  .frame { width:1280px; height:720px; margin:0 auto; position:relative; overflow:hidden; background:#fff; }
+  header { height:84px; background:var(--navy); color:#fff; display:flex; align-items:center; padding:0 40px; gap:24px; }
+  header h1 { font-family: Cambria, Caladea, Georgia, serif; font-size:28px; margin:0; font-weight:700; flex:1; }
+  .year { font-family: Cambria, Caladea, Georgia, serif; font-size:30px; color:var(--brass); font-weight:700; }
+  .dots { display:flex; gap:10px; }
+  .dot { width:34px; height:34px; border-radius:50%; border:2px solid #6E7FA3; color:#C9D3E6; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:15px; }
+  .dot.done { background:var(--slate); border-color:var(--slate); color:#fff; }
+  .dot.now { background:var(--brass); border-color:var(--brass); color:var(--navy); }
+  main { display:flex; gap:28px; padding:28px 40px 0; height:calc(720px - 84px - 96px); }
+  .left { flex:1.55; display:flex; flex-direction:column; gap:14px; }
+  .right { flex:1; display:flex; flex-direction:column; gap:12px; }
+  .lens { display:inline-block; background:var(--slate); color:#fff; border-radius:16px; padding:4px 14px; font-size:15px; font-weight:700; align-self:flex-start; }
+  .q { font-family: Cambria, Caladea, Georgia, serif; font-size:27px; font-weight:700; color:var(--navy); line-height:1.25; margin:0; }
+  .ctx { font-size:17px; line-height:1.45; margin:0; }
+  .opt { border:2px solid var(--line); border-radius:12px; padding:13px 16px; font-size:17px; line-height:1.35; cursor:pointer; background:#fff; display:flex; gap:12px; align-items:flex-start; transition:all .2s; }
+  .opt b { color:var(--navy); }
+  .opt .key { flex:0 0 30px; height:30px; border-radius:50%; background:var(--mist); color:var(--navy); font-weight:700; display:flex; align-items:center; justify-content:center; }
+  .opt:hover { border-color:var(--slate); }
+  .opt.picked { border-color:var(--brass); background:var(--sand); box-shadow:0 0 0 3px rgba(201,162,39,.35); }
+  .opt.picked .key { background:var(--brass); }
+  .opt.faded { opacity:.45; }
+  .result { border-radius:12px; padding:14px 18px; font-size:17px; line-height:1.45; }
+  .result.good { background:var(--mist); }
+  .result h3 { margin:0 0 6px; font-size:19px; color:var(--navy); }
+  .whatif { background:#F5DDD7; border-radius:12px; padding:12px 18px; font-size:16px; line-height:1.4; }
+  .whatif b { color:var(--red); }
+  .board { background:var(--navy); color:#fff; border-radius:14px; padding:18px 22px; }
+  .board h2 { margin:0 0 10px; font-size:16px; letter-spacing:1px; color:#C9D3E6; font-weight:700; text-transform:uppercase; }
+  .metric { display:flex; justify-content:space-between; align-items:baseline; padding:10px 0; border-top:1px solid #2C3D63; }
+  .metric:first-of-type { border-top:none; }
+  .metric .lab { font-size:16px; color:#C9D3E6; }
+  .metric .val { font-family: Cambria, Caladea, Georgia, serif; font-size:30px; font-weight:700; }
+  .metric .delta { font-size:14px; color:var(--brass); text-align:right; }
+  .note { font-size:13px; color:var(--grey); line-height:1.35; }
+  .card { background:var(--sand); border-radius:12px; padding:14px 18px; font-size:16px; line-height:1.4; }
+  .card b { color:var(--navy); }
+  footer.cap { position:absolute; left:0; right:0; bottom:0; height:96px; background:#0E1830; color:#fff; display:flex; align-items:center; padding:0 40px; font-size:21px; line-height:1.35; }
+  footer.cap.hide { display:none; }
+  .controls { position:absolute; bottom:18px; right:40px; display:flex; gap:10px; }
+  .controls button { font: inherit; font-size:16px; padding:10px 18px; border-radius:10px; border:none; background:var(--brass); color:var(--navy); font-weight:700; cursor:pointer; }
+  .controls button.sec { background:var(--mist); }
+  .title { position:absolute; inset:0; background:var(--navy); color:#fff; display:flex; flex-direction:column; justify-content:center; padding:0 90px; }
+  .title h1 { font-family: Cambria, Caladea, Georgia, serif; font-size:56px; margin:0 0 14px; }
+  .title p { font-size:24px; color:#DDE5F0; margin:6px 0; line-height:1.4; }
+  .title .gold { color:var(--brass); font-weight:700; }
+  table.sum { width:100%; border-collapse:collapse; font-size:16px; }
+  table.sum th { background:var(--navy); color:#fff; text-align:left; padding:8px 10px; font-size:15px; }
+  table.sum td { padding:8px 10px; border-bottom:1px solid var(--line); }
+  table.sum td.bad { color:var(--red); font-weight:700; }
+  table.sum td.ok { color:var(--slate); font-weight:700; }
+</style>
+<style>
+  html, body { height:100%; }
+  body { background:#14213D; overflow:hidden; }
+  .frame { transform-origin: top left; margin:0 !important; position:absolute !important; }
+</style>
+<script>
+  function fitFrame() {
+    var f = document.querySelector('.frame'); if (!f) return;
+    var k = Math.min(window.innerWidth / 1280, window.innerHeight / 720);
+    f.style.transform = 'scale(' + k + ')';
+    f.style.left = ((window.innerWidth - 1280 * k) / 2) + 'px';
+    f.style.top = ((window.innerHeight - 720 * k) / 2) + 'px';
+  }
+  window.addEventListener('resize', fitFrame);
+  window.addEventListener('load', fitFrame);
+  document.addEventListener('DOMContentLoaded', fitFrame);
+</script>
+</head>
+<body>
+<div class="frame" id="app"></div>
+<script>
+// All effects are illustrative teaching estimates except where a source is named.
+const BASE = { open: 109, cost: 375, deaths: 5609 }; // months after July 1905 to opening (Aug 1914); $ million; recorded deaths
+const D = [
+  { lens:"Lenses 5 and 9: risk and duty of care", year:"July 1905",
+    q:"Yellow fever is back. Do you fund Gorgas's mosquito campaign?",
+    ctx:"A third of your men are sick and Washington wants the dirt to fly. Dr Gorgas wants thousands of men, screens on every window and fumigation of every town.",
+    opts:[ ["Fund it in full", "Put about 4,000 men on mosquito control before mass hiring."], ["Keep it small", "Treat sickness as it comes and put every spare man on digging."] ],
+    right:0,
+    good:"The last case of yellow fever was reported in November 1905, and the workforce could grow safely.",
+    bad:{ open:24, cost:60, deaths:6000, txt:"Disease keeps emptying the workforce, as it did for the French." },
+    cap:"Decision 1. Fund the mosquito campaign. Health was the top risk on the 1904 register, and the critical path ran through the workforce." },
+  { lens:"Lens 2: scheduling", year:"August 1905",
+    q:"Excavation is slow. Do you dig harder or stop and fix the railway?",
+    ctx:"The Panama Railroad is single-tracked and worn out. Spoil cannot leave the Cut fast enough, and the rain washes it back in.",
+    opts:[ ["Pause digging and build the system", "Double-track the railway, build housing and kitchens first."], ["Dig harder", "Order more steam shovels and run them on the old track."] ],
+    right:0,
+    good:"Stevens all but stopped excavation, rebuilt the railway and housing, and excavation records followed.",
+    bad:{ open:18, cost:40, deaths:800, txt:"More shovels queue behind a jammed railway: more cost, no more output." },
+    cap:"Decision 2. Fix the constraint first. A steam shovel is only as fast as the empty train that reaches it." },
+  { lens:"Lenses 1 and 7: scope and estimating", year:"January 1906",
+    q:"The consulting engineers are split. Sea-level canal or locks?",
+    ctx:"Eight engineers favour a sea-level canal. Five favour a dam across the Chagres, a lake and locks.",
+    opts:[ ["Lock canal with Gatun dam and lake", "Board minority estimate: $139.7 million."], ["Sea-level canal, like Suez", "Board majority estimate: $247 million."] ],
+    right:0,
+    good:"Congress chose locks in June 1906. The minority estimated the lock canal would take about six years less to build.",
+    bad:{ open:72, cost:107, deaths:2000, txt:"Sourced: about six years longer and about $107 million more, on the 1906 board's own estimates." },
+    cap:"Decision 3. Scope is a decision. The design choice set the cost, the schedule and a century of operations." },
+  { lens:"Lenses 3 and 4: contracts and procurement", year:"February 1907",
+    q:"Bids are in to manage the work for a percentage of cost. Accept the lowest?",
+    ctx:"Bids range from 6.75 to 28 per cent. The lowest bidder still has to find financial associates.",
+    opts:[ ["Reject the bids and build with your own workforce", "The owner already holds the railway, the plant and the know-how."], ["Accept the lowest bid", "Hand the excavation to a contractor paid a share of cost."] ],
+    right:0,
+    good:"The bids were rejected and the Army engineers took over with an employed workforce.",
+    bad:{ open:6, cost:30, deaths:0, txt:"A fee that rises with cost, a new mobilisation and claims over slides." },
+    cap:"Decision 4. Choose the delivery model to fit the risk. Slides and floods could not be transferred at a fair price." },
+  { lens:"Lens 11: governance", year:"April 1907",
+    q:"Stevens has resigned. How do you govern the project now?",
+    ctx:"A commission in Washington still holds many decisions. The work is on the isthmus.",
+    opts:[ ["One accountable leader with full authority", "Make the new chief engineer chairman as well, on site."], ["Keep the commission as it is", "Appoint a new chief engineer under the existing board."] ],
+    right:0,
+    good:"Goethals became chairman and chief engineer and later gained full authority. The canal opened in August 1914.",
+    bad:{ open:12, cost:20, deaths:0, txt:"Decisions keep travelling to Washington and back." },
+    cap:"Decision 5. Put decision rights where the accountability is. Then keep someone who can challenge the leader." },
+];
+const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+function openDate(m){ const t = 6 + m; return MONTHS[((t%12)+12)%12] + " " + (1905 + Math.floor(t/12)); } // month 0 = July 1905
+function fmt(n){ return n.toLocaleString("en-GB"); }
+
+let picks = []; // indices chosen
+let step = 0;   // 0 title; 1..10 decision (odd=question, even=result); 11 summary; 12 close
+const params = new URLSearchParams(location.search);
+const video = params.has("video");
+
+function totals(p){
+  let o=BASE.open, c=BASE.cost, d=BASE.deaths;
+  p.forEach((k,i)=>{ if(k!==undefined && k!==D[i].right){ o+=D[i].bad.open; c+=D[i].bad.cost; d+=D[i].bad.deaths; } });
+  return {o,c,d};
+}
+function board(p, last){
+  const t = totals(p);
+  const delta = (last!==undefined && p[last]!==D[last].right) ? D[last].bad : null;
+  return `<div class="board"><h2>Forecast scoreboard</h2>
+    <div class="metric"><span class="lab">Canal opens</span><span><div class="val">${openDate(t.o)}</div>${delta?`<div class="delta">+${delta.open} months</div>`:""}</span></div>
+    <div class="metric"><span class="lab">Cost to the United States</span><span><div class="val">$${fmt(t.c)} million</div>${delta?`<div class="delta">+$${delta.cost} million</div>`:""}</span></div>
+    <div class="metric"><span class="lab">Recorded deaths</span><span><div class="val">${fmt(t.d)}</div>${delta&&delta.deaths?`<div class="delta">+${fmt(delta.deaths)}</div>`:""}</span></div>
+  </div>
+  <div class="note">Scoreboard starts from the historical outcome (opening August 1914, about $375 million, 5,609 recorded deaths). Effects of other choices are illustrative teaching estimates, except the 1906 board figures in decision 3.</div>`;
+}
+function dots(cur){
+  return `<div class="dots">${D.map((_,i)=>`<div class="dot ${i<cur?"done":i===cur?"now":""}">${i+1}</div>`).join("")}</div>`;
+}
+function render(){
+  const app = document.getElementById("app");
+  let html = "", cap = "";
+  if(step===0){
+    html = `<div class="title"><p class="gold">A decision game for the Panama Canal training module</p><h1>Chief Engineer, 1905</h1>
+      <p>It is July 1905. The French failed here. Fever is back, the railway is broken and the canal type is undecided.</p>
+      <p>Make five decisions. Watch the opening date, the cost and the human toll respond.</p>
+      <p class="gold" style="margin-top:28px">Each decision maps to a lens in the module.</p></div>`;
+    cap = "";
+  } else if(step<=10){
+    const i = Math.floor((step-1)/2), isResult = (step%2===0), d = D[i];
+    const shownPicks = picks.slice(0, isResult? i+1 : i);
+    html = `<header><h1>Chief Engineer, 1905</h1>${dots(i)}<div class="year">${d.year}</div></header>
+    <main><div class="left"><span class="lens">${d.lens}</span><p class="q">${d.q}</p>
+      ${isResult?"":`<p class="ctx">${d.ctx}</p>`}
+      ${d.opts.map((o,k)=>`<div class="opt ${isResult?(picks[i]===k?"picked":"faded"):(video&&params.get("hl")==String(k)?"picked":"")}" data-k="${k}"><span class="key">${"AB"[k]}</span><span><b>${o[0]}.</b> ${o[1]}</span></div>`).join("")}
+      ${isResult?(picks[i]===d.right?`<div class="result good"><h3>Your choice matches history</h3>${d.good}</div><div class="whatif"><b>Had you chosen ${"AB"[1-d.right]}:</b> +${d.bad.open} months, +$${d.bad.cost} million${d.bad.deaths?`, about ${fmt(d.bad.deaths)} more deaths`:""}. ${d.bad.txt}</div>`
+        :`<div class="whatif"><b>History went the other way.</b> ${d.bad.txt} This costs +${d.bad.open} months and +$${d.bad.cost} million.</div><div class="result good"><h3>What actually happened</h3>${d.good}</div>`):""}
+    </div><div class="right">${board(shownPicks, isResult?i:undefined)}</div></main>
+    ${video?"":`<div class="controls">${isResult?`<button onclick="next()">Next</button>`:""}<button class="sec" onclick="restart()">Restart</button></div>`}`;
+    cap = isResult ? D[i].cap : `Decision ${i+1}. ${d.q}`;
+  } else if(step===11){
+    const t = totals(picks);
+    const worst = totals(D.map(d=>1-d.right));
+    html = `<header><h1>Chief Engineer, 1905</h1>${dots(5)}<div class="year">Your result</div></header>
+    <main><div class="left"><p class="q">How your five decisions compare with history</p>
+      <table class="sum"><tr><th>Decision</th><th>Your choice</th><th>Had you gone the other way</th></tr>
+      ${D.map((d,i)=>`<tr><td>${i+1}. ${d.opts[d.right][0]}</td><td class="${picks[i]===d.right?"ok":"bad"}">${picks[i]===d.right?"Matches history":"Differs"}</td><td>+${d.bad.open} months, +$${d.bad.cost} million</td></tr>`).join("")}
+      </table>
+      <div class="card"><b>If every choice had gone the other way:</b> opening around ${openDate(worst.o)}, about $${fmt(worst.c)} million. In practice, a project that late runs out of money and political support, as the French one did.</div>
+    </div><div class="right">${board(picks)}</div></main>
+    ${video?"":`<div class="controls"><button onclick="restart()">Play again</button></div>`}`;
+    cap = "None of the five winning moves was about digging. Health, logistics, design, delivery model and governance decided the outcome.";
+  } else {
+    html = `<div class="title"><p class="gold">How a facilitator uses it</p><h1>Play, then debrief</h1>
+      <p>Run it after Lens 11 or as pre-work. Pairs play once, compare scoreboards, and explain each choice using the lens it belongs to.</p>
+      <p>Then ask: which of these five decisions exists in your own project today?</p>
+      <p class="gold" style="margin-top:28px">Teaching Project Management with the Panama Canal</p></div>`;
+    cap = "";
+  }
+  app.innerHTML = html + (cap ? `<footer class="cap">${cap}</footer>` : "");
+  if(!video) app.querySelectorAll(".opt").forEach(el=>{ if(step%2===1 && step<=10) el.onclick=()=>choose(+el.dataset.k); });
+  if(!video && step===0){ app.querySelector(".title").insertAdjacentHTML("beforeend", `<div style="margin-top:30px"><button onclick="next()" style="font:inherit;font-size:20px;padding:12px 26px;border-radius:10px;border:none;background:#C9A227;color:#14213D;font-weight:700;cursor:pointer">Start</button></div>`); }
+  if(!video && step===12){ app.querySelector(".title").insertAdjacentHTML("beforeend", `<div style="margin-top:30px"><button onclick="restart()" style="font:inherit;font-size:20px;padding:12px 26px;border-radius:10px;border:none;background:#C9A227;color:#14213D;font-weight:700;cursor:pointer">Play again</button></div>`); }
+  if(!video && step===11){ setTimeout(()=>{ const c=app.querySelector(".controls"); c.insertAdjacentHTML("afterbegin", `<button class="sec" onclick="next()">Facilitator note</button>`); },0); }
+}
+function choose(k){ const i=Math.floor((step-1)/2); picks[i]=k; step++; render(); }
+function next(){ step++; render(); }
+function restart(){ picks=[]; step=0; render(); }
+// video mode: ?video&step=N&picks=00000&hl=k
+if(video){ step = +(params.get("step")||0); picks = (params.get("picks")||"").split("").filter(Boolean).map(Number); }
+render();
+</script>
+</body>
+</html>
