@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Critical Path Lab: what would delay the Panama Canal?</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root { --ink:#16191D; --acc:#C4552D; --accD:#A3431F; --slate:#4F5D6B; --paper:#F4F2EE; --sand:#F6E9E2; --grey:#6B7078; --red:#9E2B25; --line:#DAD6CE; --green:#3F7A55; }
+  * { box-sizing:border-box; }
+  html, body { height:100%; margin:0; }
+  body { background:#16191D; overflow:hidden; font-family: Calibri, Carlito, "Segoe UI", Arial, sans-serif; color:var(--ink); }
+  .frame { width:1280px; height:720px; position:absolute; transform-origin: top left; background:#fff; overflow:hidden; }
+  header { height:78px; background:var(--ink); color:#fff; display:flex; align-items:center; padding:0 36px; gap:22px; }
+  header .k { font-size:12px; letter-spacing:2.5px; color:var(--acc); font-weight:700; text-transform:uppercase; }
+  header h1 { font-family: Cambria, Caladea, Georgia, serif; font-weight:400; font-size:25px; margin:2px 0 0; }
+  header .grow { flex:1; }
+  .open { text-align:right; }
+  .open .l { font-size:11px; letter-spacing:2px; color:#B3AFA8; font-weight:700; text-transform:uppercase; }
+  .open .v { font-family: Cambria, Caladea, Georgia, serif; font-size:28px; color:var(--acc); }
+  .open .d { font-size:13px; color:#E08A66; min-height:16px; }
+  main { display:flex; gap:22px; padding:16px 36px 0; }
+  .left { width:790px; }
+  .right { flex:1; display:flex; flex-direction:column; gap:10px; }
+  .sec { font-size:12px; letter-spacing:2px; font-weight:700; color:var(--grey); text-transform:uppercase; margin:2px 0 6px; display:flex; justify-content:space-between; }
+  .legend { font-size:12px; letter-spacing:0; text-transform:none; font-weight:400; display:flex; gap:14px; }
+  .legend i { display:inline-block; width:14px; height:10px; vertical-align:middle; margin-right:5px; }
+  svg text { font-family: Calibri, Carlito, Arial, sans-serif; }
+  .rows { border-top:1px solid var(--line); }
+  .rows { display:grid; grid-template-columns:1fr 1fr; column-gap:22px; }
+  .row { display:grid; grid-template-columns: 180px 1fr 34px; align-items:center; gap:8px; padding:5px 0; border-bottom:1px solid var(--line); font-size:13.5px; }
+  .row b { font-weight:700; }
+  .row input { width:100%; accent-color: var(--acc); }
+  .row .dl { text-align:right; font-weight:700; color:var(--accD); }
+  .row.crit b { color:var(--accD); }
+  .presets { display:flex; flex-wrap:wrap; gap:6px; }
+  button { font:inherit; font-size:12.5px; font-weight:700; padding:7px 10px; border:1px solid var(--line); background:#fff; color:var(--ink); cursor:pointer; }
+  button:hover { border-color:var(--ink); }
+  button.on { background:var(--ink); color:#fff; border-color:var(--ink); }
+  button.reset { background:var(--acc); color:#fff; border-color:var(--acc); }
+  .switch { display:flex; align-items:center; gap:10px; background:var(--paper); padding:10px 12px; font-size:13px; line-height:1.35; }
+  .switch input { width:18px; height:18px; accent-color: var(--acc); flex:0 0 auto; }
+  .read { background:var(--paper); border-left:4px solid var(--slate); padding:11px 14px; font-size:14.5px; line-height:1.42; min-height:118px; }
+  .read b.h { display:block; font-size:11.5px; letter-spacing:2px; text-transform:uppercase; color:var(--slate); margin-bottom:3px; }
+  .read.warn { background:#F4E1DE; border-left-color:var(--red); } .read.warn b.h { color:var(--red); }
+  table.fl { width:100%; border-collapse:collapse; font-size:13px; }
+  table.fl th { text-align:left; font-size:11.5px; color:var(--grey); border-bottom:2px solid var(--ink); padding:3px 4px; }
+  table.fl td { padding:3px 4px; border-bottom:1px solid var(--line); }
+  table.fl td.n { text-align:right; }
+  table.fl tr.crit td { color:var(--accD); font-weight:700; }
+  footer { position:absolute; left:0; right:0; bottom:0; height:34px; background:#0F1114; color:#B3AFA8; font-size:12px; display:flex; align-items:center; padding:0 36px; }
+</style>
+<script>
+  function fitFrame() {
+    var f = document.querySelector('.frame'); if (!f) return;
+    var k = Math.min(window.innerWidth / 1280, window.innerHeight / 720);
+    f.style.transform = 'scale(' + k + ')';
+    f.style.left = ((window.innerWidth - 1280 * k) / 2) + 'px';
+    f.style.top = ((window.innerHeight - 720 * k) / 2) + 'px';
+  }
+  window.addEventListener('resize', fitFrame);
+  window.addEventListener('load', fitFrame);
+</script>
+</head>
+<body>
+<div class="frame">
+  <header>
+    <div><div class="k">Lens 2 prototype / scheduling</div><h1>Critical Path Lab: what would delay the opening?</h1></div>
+    <div class="grow"></div>
+    <div class="open"><div class="l">Canal opens</div><div class="v" id="open">July 1914</div><div class="d" id="delta"></div></div>
+  </header>
+  <main>
+    <div class="left">
+      <div class="sec"><span>The plan as a Gantt chart, months from July 1904</span>
+        <span class="legend"><span><i style="background:#C4552D"></i>Critical</span><span><i style="background:#4F5D6B"></i>Not critical</span><span><i style="background:#E4E2DC"></i>Float</span><span><i style="background:#E08A66"></i>Added delay</span></span></div>
+      <svg id="g" width="790" height="282" viewBox="0 0 790 282"></svg>
+      <div class="sec" style="margin-top:6px"><span>Add a delay to any activity (months)</span></div>
+      <div class="rows" id="rows"></div>
+    </div>
+    <div class="right">
+      <div class="sec"><span>Try the exercise scenarios</span></div>
+      <div class="presets" id="presets"></div>
+      <label class="switch"><input type="checkbox" id="res"><span><b>Resource link:</b> if sanitation slips, sickness slows every construction crew in proportion.</span></label>
+      <div class="read" id="read"><b class="h">What the network says</b><span id="readt"></span></div>
+      <table class="fl" id="fl"></table>
+    </div>
+  </main>
+  <footer>Illustrative model built by the group: durations are assumptions anchored to dated events (Stevens arrives 1905, locks chosen 1906, Cut broken through 1913, opening August 1914).</footer>
+</div>
+<script>
+const MONTHS=["January","February","March","April","May","June","July","August","September","October","November","December"];
+const ACT=[
+ {k:"A",n:"Sanitation",d:18,p:[]},
+ {k:"B",n:"Railway, housing, supply",d:30,p:[]},
+ {k:"C",n:"Canal type decision",d:24,p:[]},
+ {k:"D",n:"Culebra Cut excavation",d:76,p:["M"]},
+ {k:"E",n:"Gatun dam",d:72,p:["M"]},
+ {k:"F",n:"Gatun locks",d:62,p:["M"]},
+ {k:"G",n:"Pacific locks",d:64,p:["M"]},
+ {k:"H",n:"Flood lake and cut",d:8,p:["D","E","F","G"]},
+ {k:"I",n:"Commissioning",d:6,p:["H"]},
+];
+const PRE=[["Railway +6",{B:6}],["Gatun dam +6",{E:6}],["Pacific locks +6",{G:6}],["Sanitation +6",{A:6}],["Design +9",{C:9}],["Dam +6 and Cut +3",{E:6,D:3}]];
+let delay={}; ACT.forEach(a=>delay[a.k]=0); let resLink=false;
+function calc(){
+  const dur={}; ACT.forEach(a=>dur[a.k]=a.d+delay[a.k]);
+  if(resLink && delay.A>0){ ["D","E","F","G"].forEach(k=>dur[k]=Math.round(dur[k]*(1+delay.A/40))); }
+  const ES={},EF={};
+  ["A","B","C"].forEach(k=>{ES[k]=0;EF[k]=dur[k];});
+  const M=Math.max(EF.A,EF.B,EF.C);
+  ["D","E","F","G"].forEach(k=>{ES[k]=M;EF[k]=M+dur[k];});
+  ES.H=Math.max(EF.D,EF.E,EF.F,EF.G); EF.H=ES.H+dur.H; ES.I=EF.H; EF.I=ES.I+dur.I;
+  const T=EF.I, LF={},LS={};
+  LF.I=T; LS.I=T-dur.I; LF.H=LS.I; LS.H=LF.H-dur.H;
+  ["D","E","F","G"].forEach(k=>{LF[k]=LS.H;LS[k]=LF[k]-dur[k];});
+  const LM=Math.min(LS.D,LS.E,LS.F,LS.G);
+  ["A","B","C"].forEach(k=>{LF[k]=LM;LS[k]=LF[k]-dur[k];});
+  const fl={}; ACT.forEach(a=>fl[a.k]=LF[a.k]-EF[a.k]);
+  return {dur,ES,EF,fl,T,M};
+}
+function date(m){ const t=6+m; return MONTHS[t%12]+" "+(1904+Math.floor(t/12)); }
+function gantt(r){
+  const X=m=>170+m*(600/150), rowH=27; let g="";
+  for(let m=6;m<=150;m+=12){ g+=`<line x1="${X(m)}" x2="${X(m)}" y1="10" y2="${18+ACT.length*rowH}" stroke="#F0EEE9"/><text x="${X(m)}" y="${34+ACT.length*rowH-6}" font-size="11" fill="#8E8A84" text-anchor="middle">${1905+Math.floor((m-6)/12)}</text>`; }
+  g+=`<line x1="${X(120)}" x2="${X(120)}" y1="6" y2="${18+ACT.length*rowH}" stroke="#16191D" stroke-dasharray="3 3"/><text x="${X(120)+4}" y="14" font-size="10.5" fill="#16191D">Plan: July 1914</text>`;
+  ACT.forEach((a,i)=>{
+    const y=16+i*rowH, crit=r.fl[a.k]===0, base=r.dur[a.k]-delay[a.k];
+    g+=`<text x="4" y="${y+14}" font-size="12.5" font-weight="700" fill="${crit?'#A3431F':'#16191D'}">${a.k}  ${a.n}</text>`;
+    g+=`<rect x="${X(r.ES[a.k])}" y="${y+3}" width="${Math.max(0,X(r.EF[a.k])-X(r.ES[a.k]))}" height="16" fill="${crit?'#C4552D':'#4F5D6B'}"/>`;
+    if(delay[a.k]>0 || (resLink && delay.A>0 && "DEFG".includes(a.k))){ const extra=r.dur[a.k]-a.d; g+=`<rect x="${X(r.EF[a.k]-extra)}" y="${y+3}" width="${X(r.EF[a.k])-X(r.EF[a.k]-extra)}" height="16" fill="#E08A66"/>`; }
+    if(r.fl[a.k]>0) g+=`<rect x="${X(r.EF[a.k])}" y="${y+8}" width="${X(r.EF[a.k]+r.fl[a.k])-X(r.EF[a.k])}" height="6" fill="#E4E2DC"/>`;
+  });
+  g+=`<polygon points="${X(r.T)-6},${22+ACT.length*rowH-14} ${X(r.T)+6},${22+ACT.length*rowH-14} ${X(r.T)},${22+ACT.length*rowH-6}" fill="#C4552D"/>`;
+  document.getElementById("g").innerHTML=g;
+}
+function render(){
+  const r=calc(), slip=r.T-120;
+  document.getElementById("open").textContent=date(r.T);
+  document.getElementById("delta").textContent=slip>0?`+${slip} months late`:slip<0?`${slip} months`:"on plan";
+  gantt(r);
+  document.querySelectorAll(".row").forEach(el=>{ const k=el.dataset.k; el.className="row"+(r.fl[k]===0?" crit":""); el.querySelector(".dl").textContent=delay[k]?"+"+delay[k]:"0"; el.querySelector("input").value=delay[k]; });
+  const crit=ACT.filter(a=>r.fl[a.k]===0).map(a=>a.k).join(", ");
+  let t, warn=false; const changed=ACT.filter(a=>delay[a.k]>0);
+  if(!changed.length){ t=`The critical path is ${crit}: 120 months, opening July 1914. It runs through logistics (B), not the famous locks. The Gatun dam (E) has only 4 months of float.`; }
+  else if(resLink && delay.A>0){ warn=true; t=`On paper sanitation had 12 months of float. With the resource link on, a ${delay.A}-month slip spreads sickness through every crew, and the opening moves to ${date(r.T)}. Float on a network ignores resource dependencies.`; }
+  else if(slip<=0){ t=`No effect on the opening: the delay was absorbed by float. Critical path still ${crit}. But float is shared, so the next slip on this path will cost months.`; }
+  else { t=`The opening slips ${slip} months to ${date(r.T)}. Critical path now ${crit}. ${r.fl.E===0&&!changed.find(a=>a.k==="E")?"":""}Ask: what contingency would you have put against this, and where?`; }
+  if(!resLink && delay.A>0 && slip<=0){ warn=true; t+=` Now switch on the resource link: what does sanitation's float really mean?`; }
+  const rd=document.getElementById("read"); rd.className="read"+(warn?" warn":""); document.getElementById("readt").textContent=t;
+  document.getElementById("fl").innerHTML=`<tr><th>Activity</th><th style="text-align:right">Start</th><th style="text-align:right">Finish</th><th style="text-align:right">Float</th></tr>`+ACT.map(a=>`<tr class="${r.fl[a.k]===0?'crit':''}"><td>${a.k} ${a.n}</td><td class="n">${r.ES[a.k]}</td><td class="n">${r.EF[a.k]}</td><td class="n">${r.fl[a.k]}</td></tr>`).join("");
+  document.querySelectorAll("#presets button[data-i]").forEach(b=>{ const p=PRE[+b.dataset.i][1]; b.className=ACT.every(a=>(p[a.k]||0)===delay[a.k])?"on":""; });
+}
+document.getElementById("rows").innerHTML=ACT.map(a=>`<div class="row" data-k="${a.k}"><span><b>${a.k}</b> ${a.n} <span style="color:#8E8A84">(${a.d})</span></span><input type="range" min="0" max="24" value="0"><span class="dl">0</span></div>`).join("");
+document.querySelectorAll(".row").forEach(el=>{ el.querySelector("input").oninput=e=>{ delay[el.dataset.k]=+e.target.value; render(); }; });
+document.getElementById("presets").innerHTML=PRE.map((p,i)=>`<button data-i="${i}">${p[0]}</button>`).join("")+`<button class="reset" id="reset">Reset</button>`;
+document.querySelectorAll("#presets button[data-i]").forEach(b=>b.onclick=()=>{ ACT.forEach(a=>delay[a.k]=0); Object.assign(delay,PRE[+b.dataset.i][1]); render(); });
+document.getElementById("reset").onclick=()=>{ ACT.forEach(a=>delay[a.k]=0); resLink=false; document.getElementById("res").checked=false; render(); };
+document.getElementById("res").onchange=e=>{ resLink=e.target.checked; render(); };
+const P=new URLSearchParams(location.search);
+if(P.get("d")){ P.get("d").split(",").forEach(x=>{ const [k,v]=x.split(":"); delay[k]=+v; }); }
+if(P.has("res")){ resLink=true; document.getElementById("res").checked=true; }
+render(); fitFrame();
+</script>
+</body>
+</html>
